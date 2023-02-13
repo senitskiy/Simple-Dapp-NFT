@@ -1,0 +1,5 @@
+remixd -s . -u https://remix.ethereum.org
+
+remixd -s . --remix-ide https://remix.ethereum.org
+
+= ERC 721

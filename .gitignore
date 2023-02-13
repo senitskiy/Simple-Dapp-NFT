@@ -1,1 +1,11 @@
 node_modules
+.env
+contract/.deps
+contract/artifacts
+contracts/.deps
+contracts/artifacts
+contracts/abi
+contracts/utils/artifacts
+contracts/utils/introspection/artifacts
+contracts/ERC721/artifacts
+contracts/ERC721/extensions/artifacts

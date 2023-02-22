@@ -78,11 +78,5 @@ position: relative; */
   display: inline;
  }
 
-dt {
-  float: center; /* Для размещения на одной строке */
-  width: 1700px; /* Ширина для текста */
-  text-align: center; /* Выравнивание по правому краю */
 
-  min-height: 1px; /* Минимальная высота */
- }
 

@@ -11,14 +11,21 @@ contract NFToken is ERC721, ERC721URIStorage, Ownable {
     using Counters for Counters.Counter;
     Counters.Counter private _tokenIds;
 
-    constructor(string memory _name, string memory _symbol) ERC721(_name, _symbol) {}
+    constructor(string memory _name, string memory _symbol) ERC721(_name, _symbol) {
+                
+        // ERC721 newERC721 = new ERC721(_name, _symbol);
+        // address newERC721Address = address(newERC721);
+        emit CollectionCreated(address(this), _name, _symbol);
 
-    function mint(address to, uint256 tokenId, string memory tokenURI) public onlyOwner {
+    }
+
+    function mint(address to, uint256 tokenId, string memory tokenURI) public {
         // адрес получателя, tokenId, tokenUri
         
         super._safeMint(to, tokenId);
         super._setTokenURI(tokenId, tokenURI);
 
+        emit TokenMinted(address(this), to, tokenId, tokenURI);
     }
 
     function _burn(uint256 tokenId)

@@ -24,6 +24,10 @@ interface IERC721 is IERC165 {
      */
     event ApprovalForAll(address indexed owner, address indexed operator, bool approved);
 
+    event CollectionCreated(address indexed collection, string name, string symbol);
+    
+    event TokenMinted(address indexed collection, address indexed recipient, uint256 tokenId, string tokenURI);
+
     /**
      * @dev Returns the number of tokens in ``owner``'s account.
      */

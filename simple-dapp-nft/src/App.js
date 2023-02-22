@@ -1,13 +1,14 @@
 import { useEffect, useState } from 'react';
 import React  from 'react';
 import './App.css';
-import ERC721 from './ERC721.json';
+import ERC721 from './NFToken.json';
 import { ethers, ContractFactory } from 'ethers'; //
 import InputName from './input/inputName'
 import InputSymbol from './input/inputSymbol'
 import InputAddressTo from './input/inputAddressTo'
 import InputTokenId from './input/inputTokenId'
 import InputTokenURI from './input/inputTokenURI'
+// import Home from "./components/Home/Home";
 // import contractAbi from './abi/abi'
 // import contractByteCode from './abi/bytecode'
 // address to, uint256 tokenId, string memory tokenURI
@@ -16,6 +17,7 @@ import InputTokenURI from './input/inputTokenURI'
 // import fs from 'fs'
 
 let contractAddress
+// let currentAccount
 const bytecode = ERC721.data.bytecode.object
 const abi = ERC721.abi
 
@@ -57,6 +59,7 @@ function App() {
       const accounts = await ethereum.request({ method: 'eth_requestAccounts' });
       console.log("Found an account! Address: ", accounts[0]);
       setCurrentAccount(accounts[0]);
+      // currentAccount = accounts[0]
     } catch (err) {
       console.log(err)
     }
@@ -75,7 +78,7 @@ function App() {
     //  import { ContractFactory } from 'ethers';
     // const bytecode1 = await fs.readFile('./abi/bytecode').toString();
     const { ethereum } = window;
-    console.log(bytecode)
+    // console.log(bytecode)
     // console.log(bytecode1)
     // console.log(contractAbi)
     const provider = new ethers.providers.Web3Provider(ethereum);
@@ -83,17 +86,24 @@ function App() {
     // const fd = {contractByteCode}
     // console.log(fd)
     // console.log(JSON.parse(contractByteCode))
-     const factory = new ContractFactory(abi, bytecode, signer);
+    const factory = new ContractFactory(abi, bytecode, signer);
      
+    const inputName = document.getElementById("inputName").value
+    const inputSymbol = document.getElementById("inputSymbol").value
+    // console.log(inputName)
+    // console.log(inputSymbol)
+    // console.log(currentAccount)
     //  // If your contract requires constructor args, you can specify them here
-     const contract = await factory.deploy("Naame", "Symmbol");
+    const contract = await factory.deploy(inputName, inputSymbol);
      
     //  console.log("InputTokenURI:"+InputTokenURI.prototype.props.value);
-     console.log(contract.address);
-     console.log(contract.deployTransaction);
-     console.log(contract.deployTransaction.creates)
+    //  console.log(contract.address);
+    //  console.log(contract.deployTransaction);
+     console.log("NFT collection address:" + contract.deployTransaction.creates)
 
      contractAddress = contract.deployTransaction.creates
+
+     checkEventCollectionCreated()
      // MNFT.deploy({
      //     data: bs.data.bytecode.object
      // }).send({
@@ -158,20 +168,26 @@ function App() {
         const provider = new ethers.providers.Web3Provider(ethereum);
         const signer = provider.getSigner();
         const nftContract = new ethers.Contract(contractAddress, abi, signer);
-        const fd = nftContract.functions
-        console.log(fd);
-        console.log("Initialize payment");
-        console.log({nftContract})
-        let nftTxn1 = await nftContract.name()
-        console.log({nftTxn1})
+
+        const inputAddressTo = document.getElementById("inputAddressTo").value
+        const inputTokenId = parseInt(document.getElementById("inputTokenId").value);
+        const inputTokenURI = document.getElementById("inputTokenURI").value
         // let nftTxn1 = await nftContract.signer.call.mint("0x265F176620fCD0AcBE38f4cC75B30007AB0A10c9","1","https://www.shutterstock.com/image-vector/cute-dog-space-vector-illustration-600w-547688842.jpg", { value: ethers.utils.parseEther("0.01") } );
         // let nftTxn = await nftContract.mintNFTs(1, { value: ethers.utils.parseEther("0.01") });
-        let nftTxn = await nftContract.mint("0x265F176620fCD0AcBE38f4cC75B30007AB0A10c9","1","https://www.shutterstock.com/image-vector/cute-dog-space-vector-illustration-600w-547688842.jpg", { value: ethers.utils.parseEther("0.01") } );
+        let nftTxn = await nftContract.mint(inputAddressTo,inputTokenId,inputTokenURI);
         // address to, uint256 tokenId, string memory tokenURI)
-        console.log("Mining... please wait");
-        await nftTxn.wait();
+        console.log("Minting... please wait");
+        // await nftTxn.wait();
+        // console.log({nftTxn})
+        // console.log(`Minted, see transaction: https://testnet.bscscan.com/tx/${nftTxn.hash}`);
+        console.log(`Minted, see transaction: ${nftTxn.hash}`);
 
-        console.log(`Mined, see transaction: https://rinkeby.etherscan.io/tx/${nftTxn.hash}`);
+        // const resEventMint = 
+        await checkEventMint()
+        // console.log(resEventMint)
+
+        let currentTokenId = parseInt(document.getElementById("inputTokenId").value)
+        document.getElementById("inputTokenId").value = ++currentTokenId
 
       } else {
         console.log("Ethereum object does not exist");
@@ -180,6 +196,84 @@ function App() {
     } catch (err) {
       console.log(err);
     }
+  }
+
+  const checkEventCollectionCreated = () => {
+    try {
+      const { ethereum } = window;
+
+      if (ethereum) {
+        const provider = new ethers.providers.Web3Provider(ethereum);
+        const signer = provider.getSigner();
+        const nftContract = new ethers.Contract(contractAddress, abi, signer);    
+
+        nftContract.on("CollectionCreated", (collection, name, symbol) => {
+          console.log("Collection created!")
+          console.log("collection: " + collection)
+          console.log("name: " + name)
+          console.log("symbol: " + symbol)
+          console.log({collection: collection, name: name, symbol: symbol})
+        });        
+      }
+    } catch (err) {
+      console.log(err);
+    }      
+  }
+
+  const checkEventMint = async () => {
+    try {
+      const { ethereum } = window;
+
+      if (ethereum) {
+        const provider = new ethers.providers.Web3Provider(ethereum);
+        const signer = provider.getSigner();
+        const nftContract = new ethers.Contract(contractAddress, abi, signer);   
+        // let id =1 
+        // console.log(id++)
+        // let collection, recipient, tokenId, tokenURI
+
+        const handler = (_collection, _recipient, _tokenId, _tokenURI, event) => {
+          console.log("collection: " + _collection)
+          console.log("recipient: " + _recipient)
+          console.log("tokenId: " + parseInt(_tokenId))
+          console.log("tokenURI: " + _tokenURI)
+          // console.log({event})
+
+          nftContract.removeListener("TokenMinted", handler)
+          // collection = _collection
+          // recipient = _recipient
+          // tokenId = parseInt(_tokenId)
+          // tokenURI = _tokenURI
+        }
+
+        nftContract.on("TokenMinted", handler)
+        //   (_collection, _recipient, _tokenId, _tokenURI) => {
+        //     // console.log("collection: " + _collection)
+        //     // console.log("recipient: " + _recipient)
+        //     // console.log("tokenId: " + parseInt(_tokenId))
+        //     // console.log("tokenURI: " + _tokenURI)
+        //     nftContract.removeListener("TokenMinted")
+        //   }
+        // );    
+
+        return () => {
+          // nftContract.removeListener("TokenMinted", handler)
+          // console.log("collection1: " + collection)
+          // console.log("recipient1: " + recipient)
+          // console.log("tokenId1: " + parseInt(tokenId))
+          // console.log("tokenURI1: " + tokenURI)
+          // nftContract.removeListener("TokenMinted", handler)
+        }                   
+        // if (resEvent) {
+        //   console.log("collection: " + collection)
+        //   console.log("recipient: " + recipient)
+        //   console.log("tokenId: " + parseInt(tokenId))
+        //   console.log("tokenURI: " + tokenURI)
+        // }
+      }
+    } catch (err) {
+      console.log(err);
+    }      
   }
 
   const connectWalletButton = () => {
@@ -206,69 +300,82 @@ function App() {
     )
   }
 
+  // const imageDeploy = () => {
+  //   return (
+  //     <div>
+  //       <img src="https://www.shutterstock.com/image-vector/cute-dog-space-vector-illustration-600w-547688842.jpg">
+  //       </img>     
+  //     </div>
+  //   )
+  // }
+
   useEffect(() => {
     checkWalletIsConnected();
   }, [])
 
   return (
-    <div className='main-app'>
-      <h1>Simple Dapp NFT</h1>
-      
-      {/* <p><b>Ваше имя:</b><br>
-   <input type="text" size="40">
-  </p> */}
-    <dd >
-      <dt>Name:</dt> 
-      <div> 
-        <InputName
-        />
-      </div>
-    </dd>
-    <dd >
-      <dt>Symbol:</dt> 
-      <div> 
-        <InputSymbol
-        />
-      </div>
-    </dd>
-    
-    
-      <div>
-        {currentAccount ? deployButton() : connectWalletButton()}
-      </div>     
+    <div>
+      <header className="main-header">
+        <h1>React &amp; Web3</h1>
+        <nav className="nav">
+          <ul>
+            <li>
+              <a href="/">{currentAccount}</a>
+            </li>
+          </ul>
+        </nav>
+      </header>
+      <main>    
+        <div className='main-app'>
+          <h1>Simple Dapp NFT</h1>      
+          <div >
+            <div>Name:</div> 
+            <div> 
+              <InputName
+              />
+            </div>
+          </div>
+          <div >
+            <div>Symbol:</div> 
+            <div> 
+              <InputSymbol
+              />
+            </div>
+          </div>        
+          <div>
+            {currentAccount ? deployButton() : connectWalletButton()}
+          </div>     
+          <br></br>
+          <br></br>
+          <div >
+            <div>AddressTo:</div> 
+            <div> 
+              <InputAddressTo
+              />
+            </div>
+          </div>
+          <div>
+            <div>TokenId:</div> 
+            <div> 
+              <InputTokenId
+              />
+            </div>
+          </div>      
+          <div >
+            <div>TokenURI:</div> 
+            <div> 
+              <InputTokenURI
+              />
+            </div>
+          </div>  
+          {/* <div><imageDeploy/></div> */}
 
-    <br></br>
-    <br></br>
-    <br></br>
-    <dd >
-      <dt>AddressTo:</dt> 
-      <div> 
-        <InputAddressTo
-        />
-      </div>
-    </dd>
-    <dd >
-      <dt>TokenId:</dt> 
-      <div> 
-        <InputTokenId
-        />
-      </div>
-    </dd>      
-    <dd >
-      <dt>TokenURI:</dt> 
-      <div> 
-        <InputTokenURI
-        />
-      </div>
-    </dd>  
-
-    
-
-      <div>
-        {currentAccount ? mintNftButton() : connectWalletButton()}
-      </div>
-    
-    </div>
+          <div>
+            {currentAccount ? mintNftButton() : connectWalletButton()}
+          </div>    
+        </div>
+      </main> 
+    </div>  
   )
 }
 

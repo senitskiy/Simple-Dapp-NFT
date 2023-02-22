@@ -19,6 +19,7 @@ class Input extends Component {
     return (
       <div>
         <input
+          id="inputName"
           type="text"
           onChange={this.handleChange}
           value={this.state.value}

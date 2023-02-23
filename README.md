@@ -3,8 +3,8 @@
 
 remixd -s . --remix-ide https://remix.ethereum.org
 
-docker run --name some-redis -d redis redis-server --save 60 1 --loglevel warning
+### `docker run -d -p 6379:6379 redislabs/redismod`
 
-npm run server
+### `npm run serve`
 
-npm run start
+### `npm run start`

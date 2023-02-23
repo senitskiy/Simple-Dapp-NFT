@@ -21,7 +21,7 @@ let contractAddress
 const bytecode = ERC721.data.bytecode.object
 const abi = ERC721.abi
 
-
+const url = "http://localhost:3001/events"
 
 function App() {
 
@@ -232,12 +232,48 @@ function App() {
         // console.log(id++)
         // let collection, recipient, tokenId, tokenURI
 
-        const handler = (_collection, _recipient, _tokenId, _tokenURI, event) => {
+        const handler = async (_collection, _recipient, _tokenId, _tokenURI, event) => {
           console.log("collection: " + _collection)
           console.log("recipient: " + _recipient)
           console.log("tokenId: " + parseInt(_tokenId))
           console.log("tokenURI: " + _tokenURI)
-          // console.log({event})
+
+          const data = { 
+            "collection": _collection,
+            "recipient": _recipient,
+            "tokenId":  parseInt(_tokenId),
+            "tokenURI": _tokenURI
+          }
+
+          // Access-Control-Allow-Origin : *
+          const response = await fetch(url, {
+
+            method: "POST",
+            mode: 'cors',
+            headers: {
+              // 'Access-Control-Allow-Origin':'*',
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                data
+            })
+
+            // method: 'POST', // *GET, POST, PUT, DELETE, etc.
+            // mode: 'cors', // no-cors, *cors, same-origin
+            // cache: 'no-cache', // *default, no-cache, reload, force-cache, only-if-cached
+            // credentials: 'same-origin', // include, *same-origin, omit
+            // headers: {
+            //   'Content-Type': 'application/json'
+            //   // 'Content-Type': 'application/x-www-form-urlencoded',
+            // },
+            // redirect: 'follow', // manual, *follow, error
+            // referrerPolicy: 'no-referrer', // no-referrer, *client
+            // body: JSON.stringify(data) // body data type must match "Content-Type" header
+          });
+
+          const commits = await response.json();
+
+          if (commits) console.log("Redis id:" + commits.id)
 
           nftContract.removeListener("TokenMinted", handler)
           // collection = _collection
@@ -380,8 +416,3 @@ function App() {
 }
 
 export default App;
-
-// cnrprod-team-27488
-
-
-// https://git.codenrock.com/vk-nft-definition/nft-content.git
